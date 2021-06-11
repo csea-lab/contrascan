@@ -1,0 +1,5 @@
+# Specifies EXACTLY which files are necessary AND sufficient to exist before running each node in the pipeline.
+# Anything not listed here can be safely deleted without breaking the pipeline.
+
+check_raw.py:
+  - ../raw/subjects-complete/*
