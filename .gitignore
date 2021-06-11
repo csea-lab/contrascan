@@ -1,0 +1,8 @@
+*.eeg
+*.vmrk
+*.vhdr
+*.nii
+*.HEAD
+*.BRIK
+*.dat
+fMRI settings.txt
