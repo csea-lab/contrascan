@@ -5,4 +5,10 @@
 *.HEAD
 *.BRIK
 *.dat
+*.fdt
+*.set
+*.ehst2
+*.hfinf2
+*.mat
+*.cache
 fMRI settings.txt
