@@ -11,5 +11,6 @@
 *.hfinf2
 *.mat
 *.cache
+__pycache__
 .vscode
 fMRI settings.txt
