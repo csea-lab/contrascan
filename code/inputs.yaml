@@ -3,3 +3,6 @@
 
 bids:
   - ../raw/subjects-complete/
+
+fmriprep:
+  - ../outputs/bids

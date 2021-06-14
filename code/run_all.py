@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+6#!/usr/bin/env python3
 """
 The master script. Run this to run the entire analysis from beginning to end.
 
@@ -13,12 +13,14 @@ import yaml
 
 # Import local modules.
 import bids
+import fmriprep
 
 def main():
     """
     Drives our entire analysis. Each node of the pipeline is a single Python module.
     """
     run_node(bids)
+    run_node(fmriprep)
 
 def run_node(node) -> None:
     """
@@ -26,11 +28,12 @@ def run_node(node) -> None:
     """
     name = node.__name__
     _check_inputs(name)
-    already_ran = _check_already_ran(name)
+    already_run = _check_already_run(name)
 
-    if already_ran:
-        print(f"Skipping {name} because it has already ran")
+    if already_run:
+        print(f"Skipping node '{name}' because it has already run")
     else:
+        print(f"Running node '{name}'")
         node.main()
 
 def _check_inputs(name_of_node: str) -> None:
@@ -49,17 +52,17 @@ def _check_inputs(name_of_node: str) -> None:
             if not path.exists():
                 raise FileNotFoundError(f"Can't find {path} but {name_of_node} requires it")
 
-def _check_already_ran(name_of_node: str) -> bool:
+def _check_already_run(name_of_node: str) -> bool:
     """
-    Check if a node has ran before.
+    Check if a node has run before.
     """
     directory = Path(f"../outputs/{name_of_node}")
 
-    ran = False
+    already_run = False
     if directory.exists():
-        ran = True
+        already_run = True
 
-    return ran
+    return already_run
 
 def read_yaml(path: PathLike) -> Dict:
     """
