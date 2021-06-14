@@ -7,7 +7,6 @@ veliebm@gmail.com
 """
 # Import external modules.
 from os import PathLike
-import subprocess
 from pathlib import Path
 from typing import Dict
 import yaml
