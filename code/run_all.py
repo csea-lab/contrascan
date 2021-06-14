@@ -17,7 +17,9 @@ import fmriprep
 
 def main():
     """
-    Drives our entire analysis. Each node of the pipeline is a single Python module.
+    Drives our entire analysis.
+
+    A node can be any python module that contains a .main() function.
     """
     run_node(bids)
     run_node(fmriprep)
