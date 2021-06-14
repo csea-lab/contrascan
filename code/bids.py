@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 """
-Checks that all our raw data is present.
+Transform our data into BIDS.
 
 Created on 6/11/2021 by Benjamin Velie.
 veliebm@gmail.com
 """
+# Import external Python modules.
 from pathlib import Path
 from re import search
 from shutil import copy
+
+# Import local modules.
+import bidsify_metadata
 
 def main():
     """
@@ -20,12 +24,14 @@ def main():
 
     copy_files_to_their_new_homes(old_and_new_paths)
 
+    bidsify_metadata.main(bids_dir)
+
 def create_dictionary_of_old_and_new_paths(input_dir: Path, bids_dir: Path) -> dict:
     """
     The meat and potatoes of this script.
 
-    Recursively finds each file in the input directory, then generates a new path for that file
-    in the bids directory. Then, this function returns the new paths and old paths in a dictionary
+    Recursively find each file in the input directory, then generate a new path for that file
+    in the bids directory. Then return the new paths and old paths in a dictionary
     to be copied over later.
     """
 
@@ -55,7 +61,7 @@ def create_dictionary_of_old_and_new_paths(input_dir: Path, bids_dir: Path) -> d
 
 def copy_files_to_their_new_homes(old_and_new_paths: dict):
     """
-    Copies all the old paths in the dictionary to their new locations.
+    Copy all the old paths in the dictionary to their new locations.
     """
 
     for old_path, new_path in old_and_new_paths.items():
@@ -67,7 +73,7 @@ def copy_files_to_their_new_homes(old_and_new_paths: dict):
 
 def filetype_of(path: Path) -> str:
     """
-    Returns the type of file a path is.
+    Return the type of file a path is.
 
     Returns "eeg", "dat", "anat", "func", or "unsorted".
     """
@@ -89,9 +95,9 @@ def filetype_of(path: Path) -> str:
 
 def subject_id_of(path: Path) -> str:
     """
-    Returns the subject ID found in the input file name.
+    Return the subject ID found in the input file name.
 
-    Specifically, if the filename contains 3 numerals in a row, returns it as the subject ID.
+    Specifically, if the filename contains 3 numerals in a row, return it as the subject ID.
     """
 
     matches = search(pattern="[0-9][0-9][0-9]", string=str(path))
