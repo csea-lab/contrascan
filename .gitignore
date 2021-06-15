@@ -13,6 +13,7 @@
 *.cache
 *.json
 *.tsv
+*.yaml
 outputs
 __pycache__
 .vscode
