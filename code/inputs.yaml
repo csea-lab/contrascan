@@ -6,3 +6,6 @@ bids:
 
 fmriprep:
   - ../outputs/bids
+
+afniproc:
+  - ../outputs/bids

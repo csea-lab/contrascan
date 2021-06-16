@@ -12,9 +12,10 @@ from typing import Dict
 import yaml
 
 # Import local modules.
+from log import logged
 import bids
 import fmriprep
-from log import logged
+import afniproc
 
 def main():
     """
@@ -22,10 +23,13 @@ def main():
 
     A node can be any python module that contains a .main() function.
     """
+    subjects = "102 106 107 108 109 111 112 113 114 115 116 117 118 119 120 121 122 123 124".split()
+
     run_node(bids)
     run_node(fmriprep)
+    run_node(afniproc, subjects=subjects)
 
-def run_node(node) -> None:
+def run_node(node, *args, **kwargs) -> None:
     """
     Runs a node in our pipeline.
     """
@@ -39,7 +43,7 @@ def run_node(node) -> None:
     else:
         print(f"Running node '{node_name}' because it hasn't run without raising an exception")
         run = logged(log_name)(node.main)
-        run()
+        run(*args, **kwargs)
 
 def _test_inputs(name_of_node: str) -> None:
     """
