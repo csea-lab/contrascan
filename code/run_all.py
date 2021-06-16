@@ -1,4 +1,4 @@
-6#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 The master script. Run this to run the entire analysis from beginning to end.
 
@@ -27,7 +27,13 @@ def main():
 
     run_node(bids)
     run_node(fmriprep)
+    # Run deconvolution on fMRIPrep results
     run_node(afniproc, subject_ids=subject_ids)
+    # ttest fMRIPrep versus afni_proc IRFs
+    # Check that we have BrainVision Analyzer outputs
+    # Preprocess EEG
+    # Segment EEG
+    # …
 
 def run_node(node, *args, **kwargs) -> None:
     """
