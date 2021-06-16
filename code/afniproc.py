@@ -15,18 +15,18 @@ import subprocess
 # Import CSEA libraries and modules.
 from vmrk import Vmrk
 
-def main(subjects: List[str]):
+def main(subject_ids: List[str]):
     """
     Preprocesses specified subjects using afni_proc.py.
     """
     bids_directory = Path("../outputs/bids").resolve()
 
-    for subject in subjects:
-        path_to_vmrk = bids_directory / f"sub-{subject}/eeg/sub-{subject}_task-contrascan_eeg.vmrk"
-        path_to_func = bids_directory / f"sub-{subject}/func/sub-{subject}_task-contrascan_bold.nii"
-        path_to_anat = bids_directory / f"sub-{subject}/anat/sub-{subject}_T1w.nii"
-        out_directory = Path(f"../outputs/{__name__}/sub-{subject}").resolve()
-        preprocess(out_directory, path_to_func, path_to_anat, path_to_vmrk, subject, remove_first_trs=1)
+    for subject_id in subject_ids:
+        path_to_vmrk = bids_directory / f"sub-{subject_id}/eeg/sub-{subject_id}_task-contrascan_eeg.vmrk"
+        path_to_func = bids_directory / f"sub-{subject_id}/func/sub-{subject_id}_task-contrascan_bold.nii"
+        path_to_anat = bids_directory / f"sub-{subject_id}/anat/sub-{subject_id}_T1w.nii"
+        out_directory = Path(f"../outputs/{__name__}/sub-{subject_id}").resolve()
+        preprocess(out_directory, path_to_func, path_to_anat, path_to_vmrk, subject_id, remove_first_trs=1)
 
 def preprocess(out_directory: PathLike, path_to_func: PathLike, path_to_anat: PathLike, path_to_vmrk: PathLike, subject_id: str, remove_first_trs: int):
     """
