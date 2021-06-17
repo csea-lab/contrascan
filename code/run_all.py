@@ -23,7 +23,7 @@ def main():
 
     A node can be any python module that contains a .main() function.
     """
-    subject_ids = "102 106 107 108 109 111 112 113 114 115 116 117 118 119 120 121 122 123 124".split()
+    subject_ids = "102 104 106 107 108 109 110 111 112 113 115 116 117 120 121 122 123 124 125 126".split()
 
     run_node(bids)
     run_node(fmriprep)
