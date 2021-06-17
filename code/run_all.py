@@ -2,7 +2,8 @@
 """
 The master script. Run this to run the entire analysis from beginning to end.
 
-Created on 6/11/2021 by Benjamin Velie.
+Created 6/11/2021 by Benjamin Velie.
+Last updated 6/17/2021 by Benjamin Velie.
 veliebm@gmail.com
 """
 # Import external modules.
@@ -16,6 +17,7 @@ from log import logged
 import bids
 import fmriprep
 import afniproc
+import deconvolve
 
 def main():
     """
@@ -27,7 +29,7 @@ def main():
 
     run_node(bids)
     run_node(fmriprep)
-    # Run deconvolution on fMRIPrep results
+    run_node(deconvolve)
     run_node(afniproc, subject_ids=subject_ids)
     # ttest fMRIPrep versus afni_proc IRFs
     # Check that we have BrainVision Analyzer outputs
