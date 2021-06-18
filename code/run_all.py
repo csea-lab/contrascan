@@ -16,8 +16,8 @@ import yaml
 from log import logged
 import bids
 import fmriprep
-import afniproc
 import deconvolve
+import afniproc
 
 def main():
     """
@@ -25,11 +25,11 @@ def main():
 
     A node can be any python module that contains a .main() function.
     """
-    subject_ids = "102 104 106 107 108 109 110 111 112 113 115 116 117 120 121 122 123 124 125 126".split()
+    subject_ids = "104 106 107 108 109 110 111 112 113 115 116 117 120 121 122 123 124 125".split()
 
     run_node(bids)
     run_node(fmriprep)
-    run_node(deconvolve)
+    run_node(deconvolve, subject_ids=subject_ids)
     run_node(afniproc, subject_ids=subject_ids)
     # ttest fMRIPrep versus afni_proc IRFs
     # Check that we have BrainVision Analyzer outputs
