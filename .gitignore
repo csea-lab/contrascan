@@ -4,6 +4,7 @@
 *.nii
 *.HEAD
 *.BRIK
+*.gz
 *.dat
 *.fdt
 *.set
@@ -14,6 +15,8 @@
 *.json
 *.tsv
 *.yaml
+*.bak
+*.dir
 outputs
 __pycache__
 .vscode
