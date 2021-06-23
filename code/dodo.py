@@ -7,20 +7,23 @@ Created 6/22/21 by Benjamin Velie.
 # Import external libraries and modules.
 from os import PathLike
 from pathlib import Path
-from typing import Dict, List
+from typing import Any, Dict, List
+import json
 
 # Import homemade libraries and modules.
 import create_bids_root
 import bidsify_subject
+import afniproc
 
 DOIT_CONFIG = {
     "verbosity": 2,
+    "num_process": 8, 
     "subject ids": "104 106 107 108 109 110 111 112 113 115 116 117 120 121 122 123 124 125".split()
 }
 
 def task_create_bids_root():
     """
-    Create the root of our bids dataset.
+    Create the root of our bids dataset. We'll finish BIDSifiying the data when we add our individual subjects to the dataset.
     """
     bids_dir = Path("../outputs/bids")
 
@@ -31,14 +34,16 @@ def task_create_bids_root():
     targets = [bids_dir / "dataset_description.json"]
 
     return {
-        "actions": [(action, _serialize_list(args), _serialize_dict(kwargs))],
-        "file_dep": _serialize_list(file_dep),
-        "targets": _serialize_list(targets),
+        "actions": [(action, make_json_compatible(args), make_json_compatible(kwargs))],
+        "file_dep": make_json_compatible(file_dep),
+        "targets": make_json_compatible(targets),
     }
 
 def task_bidsify_subject():
     """
-    Convert a subject to BIDS format.
+    Convert all subjects to BIDS format.
+
+    We'll need this for fMRIPrep. Also, when we submit our dataset to the NIH, they'll want it in BIDS format.
     """
     action = bidsify_subject.main
     bids_dir = Path("../outputs/bids").resolve()
@@ -64,8 +69,8 @@ def task_bidsify_subject():
             "events": bids_dir / f"sub-{id}/func/sub-{id}_task-contrascan_events.tsv",
             "dat": bids_dir / f"sourcedata/sub-{id}_task-contrascan.dat",
         }
-        sources_json = _serialize_dict(sources)
-        targets_json = _serialize_dict(targets)
+        sources_json = make_json_compatible(sources)
+        targets_json = make_json_compatible(targets)
 
         yield {
             "basename": f"bidsify {id}",
@@ -74,17 +79,98 @@ def task_bidsify_subject():
             "targets": tuple(targets_json.values()),
         }
 
-def _serialize_list(list1: List) -> List:
+def task_afniproc():
     """
-    Make list serializable.
-    """
-    return [str(item) for item in list1]
+    Run afni_proc.py to preprocess and deconvolve our subjects.
 
-def _serialize_dict(dict1: Dict) -> Dict:
+    This is the base of our pipeline. We'll use the outputs of afni_proc.py for our more advanced analyses.
     """
-    Make dict serializeable.
+    action = afniproc.main
+
+    for id in DOIT_CONFIG["subject ids"]:
+        in_dir = Path(f"../outputs/bids/sub-{id}").resolve()
+        out_dir = Path(f"../outputs/afniproc/sub-{id}").resolve()
+        kwargs = {
+            "vmrk_path": in_dir / f"eeg/sub-{id}_task-contrascan_eeg.vmrk",
+            "func_path": in_dir / f"func/sub-{id}_task-contrascan_bold.nii",
+            "anat_path": in_dir / f"anat/sub-{id}_T1w.nii",
+            "out_dir": out_dir,
+            "subject_id": id,
+            "remove_first_trs": 1,
+        }
+        
+        file_dep = [kwargs["vmrk_path"], kwargs["func_path"], kwargs["anat_path"]]
+        targets = {
+            "log": out_dir / f"output.proc.{id}",
+            "command": out_dir / f"proc.{id}",
+            "stats head": out_dir / f"stats.{id}+tlrc.HEAD",
+            "stats brik": out_dir / f"stats.{id}+tlrc.BRIK",
+            "IRF head": f"iresp_stim.{id}+tlrc.HEAD",
+            "IRF brik": f"iresp_stim.{id}+tlrc.BRIK",
+            "anat head": f"anat_final.{id}+tlrc.HEAD",
+            "anat brik": f"anat_final.{id}+tlrc.BRIK",
+        }
+
+        yield {
+            "basename": f"afniproc {id}",
+            "actions": [(action, (), make_json_compatible(kwargs))],
+            "file_dep": make_json_compatible(file_dep),
+            "targets": make_json_compatible(list(targets.values())),
+        }
+
+def make_json_compatible(data: Any) -> Any:
     """
-    return {str(key): str(value) for key, value in dict1.items()}
+    Makes your data json compatible. How? It converts any non-serializable object into a string.
+
+    If you're fixing dicts or lists, this will probably only work for shallow ones.
+    """
+    def is_jsonable(item: Any) -> bool:
+        """
+        Returns true if an object is json serializable.
+        """
+        try:
+            json.dumps(item)
+            return True
+        except (TypeError, OverflowError):
+            return False
+    def fix_dict(dictionary: Dict) -> Dict:
+        """
+        Make a dict json_serializable.
+        """
+        new_dict = {}
+        for key, value in dictionary.items():
+            if not is_jsonable(key):
+                key = str(key)
+            if not is_jsonable(value):
+                value = str(value)
+
+            new_dict[key] = value            
+        
+        return new_dict
+    def fix_list(list1: List) -> List:
+        """
+        Make a list json serializable.
+        """
+        fixed_list = []
+
+        for item in list1:
+            if is_jsonable(item):
+                fixed_list.append(item)
+            else:
+                fixed_list.append(str(item))
+
+        return fixed_list
+
+    fixed_data = None
+
+    if is_jsonable(data):
+        fixed_data = data
+    elif type(data) == dict:
+        fixed_data = fix_dict(data)
+    elif type(data) == list:
+        fixed_data = fix_list(data)
+    
+    return fixed_data
 
 def the_path_that_matches(pattern: str, in_directory: PathLike) -> Path:
     """
