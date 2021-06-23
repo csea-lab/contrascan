@@ -15,30 +15,17 @@ import subprocess
 # Import CSEA libraries and modules.
 from vmrk import Vmrk
 
-def main(subject_ids: List[str]):
+def main(vmrk_path: PathLike, func_path: PathLike, anat_path: PathLike, out_dir: PathLike, subject_id: str, remove_first_trs: int):
     """
-    Preprocesses specified subjects using afni_proc.py.
-    """
-    bids_directory = Path("../outputs/bids").resolve()
-
-    for subject_id in subject_ids:
-        path_to_vmrk = bids_directory / f"sub-{subject_id}/eeg/sub-{subject_id}_task-contrascan_eeg.vmrk"
-        path_to_func = bids_directory / f"sub-{subject_id}/func/sub-{subject_id}_task-contrascan_bold.nii"
-        path_to_anat = bids_directory / f"sub-{subject_id}/anat/sub-{subject_id}_T1w.nii"
-        out_directory = Path(f"../outputs/{__name__}/sub-{subject_id}").resolve()
-        preprocess(out_directory, path_to_func, path_to_anat, path_to_vmrk, subject_id, remove_first_trs=1)
-
-def preprocess(out_directory: PathLike, path_to_func: PathLike, path_to_anat: PathLike, path_to_vmrk: PathLike, subject_id: str, remove_first_trs: int):
-    """
-    Preprocess a bopscanner subject using afni_proc.py.
+    Preprocess a contrascan subject using afni_proc.py.
     """
     # Get Path objects we'll need.
-    out_directory = Path(out_directory).resolve()
+    out_directory = Path(out_dir).resolve()
     if not out_directory.exists():
         out_directory.mkdir(parents=True)
-    path_to_vmrk = Path(path_to_vmrk).resolve()
-    path_to_func = Path(path_to_func).resolve()
-    path_to_anat = Path(path_to_anat).resolve()
+    path_to_vmrk = Path(vmrk_path).resolve()
+    path_to_func = Path(func_path).resolve()
+    path_to_anat = Path(anat_path).resolve()
 
     # Get onset times and write them to their own text file. For each TR we remove, we should subtract 2s from all onsets.
     path_to_onsets = out_directory / "onsets.tsv"
@@ -48,6 +35,10 @@ def preprocess(out_directory: PathLike, path_to_func: PathLike, path_to_anat: Pa
 
     # Run afni_proc.py. Need path to func dataset, subject ID, path to anat dataset, path to onsets in text file, and number of TRs to remove from beginning of scan.
     run_afni_proc(subject_id, path_to_anat, path_to_func, path_to_onsets, out_directory, remove_first_trs)
+
+    return {
+        "out_dir": out_directory,
+    }
 
 def run_afni_proc(subject_id: str, path_to_anat: PathLike, path_to_func: PathLike, path_to_onsets: PathLike, out_directory: PathLike, remove_first_trs: int) -> None:
     """
