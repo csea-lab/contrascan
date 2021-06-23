@@ -2,6 +2,7 @@
 """
 Create the root of our BIDS dataset.
 """
+# Import external modules and libraries.
 import json
 from os import PathLike
 from pathlib import Path
