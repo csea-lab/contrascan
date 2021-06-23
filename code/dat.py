@@ -6,11 +6,8 @@ Class to organize and extract data from a .dat file.
 Created 8/20/2020 by Benjamin Velie.
 veliebm@gmail.com
 """
-
 from pathlib import Path
 import pandas
-
-
 class Dat():
     """
     Class to organize and extract data from a .dat file.
@@ -29,13 +26,11 @@ class Dat():
     """
 
     def __init__(self, input_path):
-
         self.path = Path(input_path)
         self.dataframe = self._as_dataframe()
         self.durations = self._durations()
         self.average_duration = sum(self.durations) / len(self.durations)
         self.trial_codes = list(self.dataframe[self.dataframe.columns[2]])
-
 
     def _durations(self) -> list:
         """
@@ -43,8 +38,7 @@ class Dat():
 
         Automatically converts times into seconds.
         """
-
-        raw_durations = self.dataframe[self.dataframe.columns[3]]
+        raw_durations = self.dataframe[self.dataframe.columns[4]]
 
         # Clean the raw durations into standard float numbers, then return them.
         return [float(duration) for duration in raw_durations]
