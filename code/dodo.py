@@ -14,6 +14,7 @@ import json
 import create_bids_root
 import bidsify_subject
 import afniproc
+import check_fmriprep
 
 DOIT_CONFIG = {
     "verbosity": 2,
@@ -51,7 +52,6 @@ def task_bidsify_subject():
     for id in DOIT_CONFIG["subject ids"]:
         old_subject_dir = Path(f"../raw/subjects-complete/sub-{id}").resolve()
         sources = {
-            "script": "bidsify_subject.py",
             "eeg": old_subject_dir / f"contrascan_{id}.eeg",
             "vhdr": old_subject_dir / f"contrascan_{id}.vhdr",
             "vmrk": old_subject_dir / f"contrascan_{id}.vmrk",
@@ -103,12 +103,12 @@ def task_afniproc():
         targets = {
             "log": out_dir / f"output.proc.{id}",
             "command": out_dir / f"proc.{id}",
-            "stats head": out_dir / f"stats.{id}+tlrc.HEAD",
-            "stats brik": out_dir / f"stats.{id}+tlrc.BRIK",
-            "IRF head": f"iresp_stim.{id}+tlrc.HEAD",
-            "IRF brik": f"iresp_stim.{id}+tlrc.BRIK",
-            "anat head": f"anat_final.{id}+tlrc.HEAD",
-            "anat brik": f"anat_final.{id}+tlrc.BRIK",
+            "stats head": out_dir / f"{id}.results/stats.{id}+tlrc.HEAD",
+            "stats brik": out_dir / f"{id}.results/stats.{id}+tlrc.BRIK",
+            "IRF head": out_dir / f"{id}.results/iresp_stim.{id}+tlrc.HEAD",
+            "IRF brik": out_dir / f"{id}.results/iresp_stim.{id}+tlrc.BRIK",
+            "anat head": out_dir / f"{id}.results/anat_final.{id}+tlrc.HEAD",
+            "anat brik": out_dir / f"{id}.results/anat_final.{id}+tlrc.BRIK",
         }
 
         yield {
@@ -117,6 +117,24 @@ def task_afniproc():
             "file_dep": make_json_compatible(file_dep),
             "targets": make_json_compatible(list(targets.values())),
         }
+
+#def task_check_fmriprep():
+#    """
+#    Simply commands the user to place fMRIPrep results in the outputs directory.
+#    """
+#    action = check_fmriprep.main
+#
+#    for id in DOIT_CONFIG["subject ids"]:
+#        in_dir = Path(f"../outputs/fmriprep/sub-{id}/fmriprep/").resolve()
+#        file_dep = {
+#            "dataset description": in_dir / "dataset_description.json",
+#        }
+#        yield {
+#            "basename": f"check fmriprep {id}",
+#            "actions": [(action, (), {})],
+#            "file_dep": make_json_compatible(file_dep.values()),
+#            "targets": [],
+#        }
 
 def make_json_compatible(data: Any) -> Any:
     """
