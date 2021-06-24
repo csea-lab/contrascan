@@ -16,7 +16,6 @@ import six
 import create_bids_root
 import bidsify_subject
 import afniproc
-import fmriprep
 
 DOIT_CONFIG = {
     "verbosity": 2,
@@ -117,28 +116,6 @@ def task_afniproc():
             "actions": [(action, (), make_json_compatible(kwargs))],
             "file_dep": make_json_compatible(file_dep),
             "targets": make_json_compatible(list(targets.values())),
-        }
-
-def task_fmriprep():
-    """
-    Simply commands the user to place fMRIPrep results in the outputs directory.
-    """
-    action = fmriprep.main
-
-    for id in DOIT_CONFIG["subject ids"]:
-        in_dir = Path(f"../outputs/fmriprep/sub-{id}/fmriprep/").resolve()
-        file_dep = {
-            "dataset description": in_dir / "dataset_description.json",
-        }
-        kwargs = {
-            "fmriprep_dir": in_dir,
-        }
-
-        yield {
-            "basename": f"fmriprep {id}",
-            "actions": [(action, (), make_json_compatible(kwargs))],
-            "file_dep": make_json_compatible(file_dep.values()),
-            "targets": [],
         }
 
 def make_json_compatible(data: Any) -> Any:
