@@ -17,6 +17,7 @@
 *.yaml
 *.bak
 *.dir
+raw/fmriprep/sub-*
 outputs
 __pycache__
 .vscode
