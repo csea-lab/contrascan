@@ -37,7 +37,7 @@ def main(vmrk_path: PathLike, func_path: PathLike, anat_path: PathLike, out_dir:
     run_afni_proc(subject_id, path_to_anat, path_to_func, path_to_onsets, out_directory, remove_first_trs)
 
     return {
-        "out_dir": out_directory,
+        "out_dir": str(out_directory),
     }
 
 def run_afni_proc(subject_id: str, path_to_anat: PathLike, path_to_func: PathLike, path_to_onsets: PathLike, out_directory: PathLike, remove_first_trs: int) -> None:
@@ -58,7 +58,7 @@ def run_afni_proc(subject_id: str, path_to_anat: PathLike, path_to_func: PathLik
         -cost lpc+ZZ
         -giant_move
         -check_flip
-        -tlrc_base TT_N27+tlrc
+        -tlrc_base MNI_avg152T1+tlrc
         -tlrc_NL_warp
         -volreg_align_to MIN_OUTLIER
         -volreg_align_e2a
@@ -81,10 +81,3 @@ def run_afni_proc(subject_id: str, path_to_anat: PathLike, path_to_func: PathLik
     """.split()
 
     subprocess.run(arguments, cwd=out_directory)
-
-def read_yaml(path: PathLike) -> Dict:
-    """
-    Decode a yaml file.
-    """
-    with open(path, "r") as io:
-        return yaml.load(io, Loader=yaml.UnsafeLoader)
