@@ -30,12 +30,11 @@ def task_create_bids_root():
 
     action = create_bids_root.main
     args = [bids_dir]
-    kwargs = {}
     file_dep = ["create_bids_root.py"]
     targets = [bids_dir / "dataset_description.json"]
 
     return {
-        "actions": [(action, make_json_compatible(args), make_json_compatible(kwargs))],
+        "actions": [(action, make_json_compatible(args), {})],
         "file_dep": make_json_compatible(file_dep),
         "targets": make_json_compatible(targets),
     }
