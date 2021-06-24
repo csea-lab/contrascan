@@ -9,12 +9,14 @@ from os import PathLike
 from pathlib import Path
 from typing import Any, Dict, List
 import json
+import collections
+import six
 
 # Import homemade libraries and modules.
 import create_bids_root
 import bidsify_subject
 import afniproc
-import check_fmriprep
+import fmriprep
 
 DOIT_CONFIG = {
     "verbosity": 2,
@@ -117,30 +119,40 @@ def task_afniproc():
             "targets": make_json_compatible(list(targets.values())),
         }
 
-#def task_check_fmriprep():
-#    """
-#    Simply commands the user to place fMRIPrep results in the outputs directory.
-#    """
-#    action = check_fmriprep.main
-#
-#    for id in DOIT_CONFIG["subject ids"]:
-#        in_dir = Path(f"../outputs/fmriprep/sub-{id}/fmriprep/").resolve()
-#        file_dep = {
-#            "dataset description": in_dir / "dataset_description.json",
-#        }
-#        yield {
-#            "basename": f"check fmriprep {id}",
-#            "actions": [(action, (), {})],
-#            "file_dep": make_json_compatible(file_dep.values()),
-#            "targets": [],
-#        }
+def task_fmriprep():
+    """
+    Simply commands the user to place fMRIPrep results in the outputs directory.
+    """
+    action = fmriprep.main
+
+    for id in DOIT_CONFIG["subject ids"]:
+        in_dir = Path(f"../outputs/fmriprep/sub-{id}/fmriprep/").resolve()
+        file_dep = {
+            "dataset description": in_dir / "dataset_description.json",
+        }
+        kwargs = {
+            "fmriprep_dir": in_dir,
+        }
+
+        yield {
+            "basename": f"fmriprep {id}",
+            "actions": [(action, (), make_json_compatible(kwargs))],
+            "file_dep": make_json_compatible(file_dep.values()),
+            "targets": [],
+        }
 
 def make_json_compatible(data: Any) -> Any:
     """
     Makes your data json compatible. How? It converts any non-serializable object into a string.
 
-    If you're fixing dicts or lists, this will probably only work for shallow ones.
+    Also, it converts non-dict/non-string iterables to lists.
+    If you're fixing nested structures, this will probably only work for shallow ones.
     """
+    def is_iterable(data: Any) -> bool:
+        """
+        Returns true if an object is an iterable but not a string.
+        """
+        return isinstance(data, collections.Iterable) and not isinstance(data, six.string_types)
     def is_jsonable(item: Any) -> bool:
         """
         Returns true if an object is json serializable.
@@ -153,6 +165,8 @@ def make_json_compatible(data: Any) -> Any:
     def fix_dict(dictionary: Dict) -> Dict:
         """
         Make a dict json_serializable.
+
+        Converts all non-serializable items into strings.
         """
         new_dict = {}
         for key, value in dictionary.items():
@@ -164,9 +178,11 @@ def make_json_compatible(data: Any) -> Any:
             new_dict[key] = value            
         
         return new_dict
-    def fix_list(list1: List) -> List:
+    def fix_iterable(list1: List) -> List:
         """
-        Make a list json serializable.
+        Make an iterable into a json serializable list.
+
+        Converts all non-serializable items into strings.
         """
         fixed_list = []
 
@@ -184,8 +200,8 @@ def make_json_compatible(data: Any) -> Any:
         fixed_data = data
     elif type(data) == dict:
         fixed_data = fix_dict(data)
-    elif type(data) == list:
-        fixed_data = fix_list(data)
+    elif is_iterable(data):
+        fixed_data = fix_iterable(data)
     
     return fixed_data
 
